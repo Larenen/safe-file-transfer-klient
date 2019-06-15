@@ -1,4 +1,4 @@
-﻿namespace KlientC
+﻿namespace SafeFileTransferClient
 {
     partial class Form1
     {

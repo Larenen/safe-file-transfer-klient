@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.28803.202
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KlientC", "KlientC\KlientC.csproj", "{131327F3-90D7-4DB9-8DE0-84BC5165556E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SafeFileTransferClient", "SafeFileTransferClient\SafeFileTransferClient.csproj", "{131327F3-90D7-4DB9-8DE0-84BC5165556E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
