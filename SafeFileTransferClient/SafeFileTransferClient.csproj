@@ -50,6 +50,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AESHelper.cs" />
     <Compile Include="MainWindow.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -66,6 +67,9 @@
     </Compile>
     <Compile Include="Structures\AuthStruct.cs" />
     <Compile Include="Structures\Config.cs" />
+    <Compile Include="Structures\FileRequest.cs" />
+    <Compile Include="Structures\ReceiveFile.cs" />
+    <Compile Include="Structures\SendFileRequest.cs" />
     <Compile Include="Structures\User.cs" />
     <Compile Include="Structures\UserList.cs" />
     <EmbeddedResource Include="MainWindow.resx">

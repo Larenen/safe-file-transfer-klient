@@ -13,6 +13,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml;
@@ -24,8 +25,10 @@ namespace SafeFileTransferClient
     public partial class MainWindow : Form
     {
         private readonly TcpClient _tcpClient;
-        private RSACryptoServiceProvider rsa = new RSACryptoServiceProvider(2048);
+        private RSACng rsa = new RSACng(2048);
         private string username;
+        private Config config;
+        private bool _active = false;
         public MainWindow()
         {
             InitializeComponent();
@@ -61,24 +64,115 @@ namespace SafeFileTransferClient
             {
                 if (openFileDialog.ShowDialog() == DialogResult.OK)
                 {
-                    labelFileName.Text = openFileDialog.FileName;
-                    string filContent = File.ReadAllText(openFileDialog.FileName);
-
+                    //Wybieramy użytkownika któremu chcemy wysłac
                     var targetUser = ((User) listBoxUsers.SelectedItem);
+
+                    var test = rsa.ExportParameters(false);
+                    var testkey = Encoding.UTF8.GetString(test.Modulus);
 
                     //Create a new instance of RSAParameters.
                     RSAParameters RSAKeyInfo = new RSAParameters();
 
                     //Set RSAKeyInfo to the public key values. 
-                    RSAKeyInfo.Modulus = Encoding.UTF8.GetBytes(targetUser.PublicKeyModulus);
-                    RSAKeyInfo.Exponent = Encoding.UTF8.GetBytes(targetUser.PublicKeyExponent);
+                    RSAKeyInfo.Modulus = Convert.FromBase64String(targetUser.PublicKeyModulus);
+                    RSAKeyInfo.Exponent = Convert.FromBase64String(targetUser.PublicKeyExponent);
 
                     //Import key parameters into RSA.
                     rsa.ImportParameters(RSAKeyInfo);
 
-                    byte[] encryptBytes = rsa.Encrypt(Encoding.UTF8.GetBytes(filContent), false);
+                    //Instancja AESA
+                    RijndaelManaged AES = new RijndaelManaged();
+                    AES.KeySize = 256;
+                    AES.GenerateKey();
 
-                    Debug.Print(Encoding.UTF8.GetString(encryptBytes));
+                    byte[] encryptedFile  = AESHelper.FileEncrypt(openFileDialog.FileName, AES.Key, AES.IV);
+
+                    //Encrypt the symmetric key and IV.
+                    byte[] encryptedSymmetricKey = rsa.Encrypt(AES.Key,RSAEncryptionPadding.Pkcs1);
+                    byte[] encryptedSymmetricIV = rsa.Encrypt(AES.IV, RSAEncryptionPadding.Pkcs1);
+
+                    //Convert name to bytes and encrypt it
+                    byte[] fileNameBytes = Encoding.UTF8.GetBytes(Path.GetFileName(openFileDialog.FileName));
+                    byte[] encryptedName = rsa.Encrypt(fileNameBytes, RSAEncryptionPadding.Pkcs1);
+
+                    /*
+
+                    rsa.FromXmlString(config.XMLKeys);
+                    byte[] encryptedName2 = rsa.Encrypt(fileNameBytes, false);
+                    var test = Encoding.UTF8.GetString(rsa.Decrypt(encryptedName2, false));
+                    
+                    */
+
+                    //Generowanie podisu raczej do wyjebanie
+                    ////Create hash from encrypted file and ecnrypted key
+                    //SHA256 sha256 = SHA256.Create();
+                    //byte[] encryptedFileHash = sha256.ComputeHash(encryptedFile);
+                    //byte[] encryptedKeyHash = sha256.ComputeHash(encryptedSymmetricKey);
+                    //byte[] encryptedIVHash = sha256.ComputeHash(encryptedSymmetricIV);
+                    //byte[] encryptedNameHash = sha256.ComputeHash(encryptedName);
+
+                    ////Konkatenacja wszystkich hashy
+                    //IEnumerable<byte> concatedHashes = encryptedFileHash.Concat(encryptedKeyHash).Concat(encryptedIVHash).Concat(encryptedNameHash);
+
+                    ////Hashowanie konkatenacji
+                    //byte[] concatHash = sha256.ComputeHash(concatedHashes.ToArray());
+
+                    ////Wczytanie klucza prywatnego uzytkownika i popdisanie konkatenacji
+                    //Config config = JsonConvert.DeserializeObject<Config>(configFile);
+                    //rsa.FromXmlString(config.XMLKeys);
+                    //byte [] signature = rsa.SignHash(concatHash, CryptoConfig.MapNameToOID("SHA256"));
+
+                    var request = new SendFileRequest
+                    {
+                        RequestCode = 105,
+                        EncryptedName = encryptedName,
+                        EncryptedKey = encryptedSymmetricKey,
+                        EncryptedIV = encryptedSymmetricIV,
+                        Receiver = targetUser.PublicKeyModulus 
+                    };
+
+                    byte[] requestBytes = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(request));
+
+                    _tcpClient.GetStream().Write(requestBytes,0,requestBytes.Length);
+
+                    if(_tcpClient.Client.Poll(100000,SelectMode.SelectRead))
+                    {
+                        byte[] buffor = new byte[_tcpClient.Available];
+                        _tcpClient.Client.Receive(buffor);
+                        int statusCode = Convert.ToInt32(Encoding.UTF8.GetString(buffor));
+                        if (statusCode == 106)
+                        {
+                            using (MemoryStream fsSource = new MemoryStream(encryptedFile))
+                            {
+                                const int bufferSize = 1024;
+                                byte[] bytes = new byte[bufferSize];
+                                int numBytesToRead = (int)fsSource.Length;
+                                int numBytesRead = 0;
+
+                                while (numBytesToRead > 0)
+                                {
+                                    // Read may return anything from 0 to numBytesToRead.
+                                    int n = fsSource.Read(bytes, 0, bufferSize);
+
+                                    // Break when the end of the file is reached.
+                                    if (n == 0)
+                                        break;
+
+                                    _tcpClient.GetStream().Write(bytes,0,n);
+
+                                    numBytesRead += n;
+                                    numBytesToRead -= n;
+                                }
+
+                                
+                            }
+                        }
+                    }
+
+                    else
+                    {
+                        //TODO SERWER NIE ODPOWIEDZAIL OBSLUZYC
+                    }
                 }
             }
         }
@@ -114,28 +208,32 @@ namespace SafeFileTransferClient
 
             _tcpClient.GetStream().Write(dataBytes, 0, dataBytes.Length);
 
-            while (_tcpClient.Available <= 0 && _tcpClient.Connected)
+            if(_tcpClient.Client.Poll(100000,SelectMode.SelectRead))
             {
-                //TODO Obsluge czekania na polaczenie sie z serwerem tutaj zrobic po x czasie przestac czekac i zwrocic false ze sie nie udalo 
+                byte[] buffor = new byte[_tcpClient.Available];
+                _tcpClient.Client.Receive(buffor);
+
+                string jsonUserList = Encoding.Default.GetString(buffor);
+
+                UserList userList = JsonConvert.DeserializeObject<UserList>(jsonUserList);
+
+                if (userList.ReturnCode == 101)
+                {
+                    listBoxUsers.Items.AddRange(userList.Users.ToArray());
+                    _active = true;
+                    new Thread(ReceivingThread).Start();
+                    return true;
+                }
+
+                if (userList.ReturnCode == 102)
+                {
+                    MessageBox.Show(userList.Message, "Błąd połączenia", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return false;
+                }
             }
-
-            byte[] buffor = new byte[_tcpClient.Available];
-            _tcpClient.Client.Receive(buffor);
-
-            string jsonUserList = Encoding.Default.GetString(buffor);
-
-            UserList userList = JsonConvert.DeserializeObject<UserList>(jsonUserList);
-
-            if (userList.ReturnCode == 101)
+            else
             {
-                listBoxUsers.Items.AddRange(userList.Users.ToArray());
-                return true;
-            }
-
-            if (userList.ReturnCode == 102)
-            {
-                MessageBox.Show(userList.Message, "Błąd połączenia", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return false;
+                //TODO PRZEZ 10 SEKUND SERWER NIE ODPOWIEDZAIL OBSLUZYC
             }
 
             return false;
@@ -144,7 +242,7 @@ namespace SafeFileTransferClient
         private void LoadConfig()
         {
             string configFile = File.ReadAllText("config.sft");
-            Config config = JsonConvert.DeserializeObject<Config>(configFile);
+            config = JsonConvert.DeserializeObject<Config>(configFile);
             username = config.Nickname;
             try
             {
@@ -174,7 +272,7 @@ namespace SafeFileTransferClient
             {
                 // Read the contents of testDialog's TextBox.
                 string selectedNickname = selectName.textBoxNickname.Text;
-                rsa = new RSACryptoServiceProvider(2048);
+                rsa = new RSACng(2048);
                 string xmlKeys = rsa.ToXmlString(true);
 
                 Config config = new Config
@@ -191,6 +289,9 @@ namespace SafeFileTransferClient
                 username = selectedNickname;
 
                 fs.Close();
+
+                var configFile = File.ReadAllText("config.sft");
+                this.config = JsonConvert.DeserializeObject<Config>(configFile);
             }
             else
             {
@@ -227,6 +328,95 @@ namespace SafeFileTransferClient
             }
 
             return fs;
+        }
+
+        private void ReceivingThread()
+        {
+            while(_active)
+            {
+                if (_tcpClient.Client.Poll(100000,SelectMode.SelectRead))
+                {
+                    int size = _tcpClient.Available;
+
+                    byte[] buffor = new byte[size];
+                    _tcpClient.Client.Receive(buffor);
+                    FileRequest fileRequest;
+                    try
+                    {
+                        fileRequest = JsonConvert.DeserializeObject<FileRequest>(Encoding.UTF8.GetString(buffor));
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e);
+                        continue;
+                    }
+
+                    if(fileRequest == null)
+                        continue;
+
+                    if (fileRequest.RequestCode == 107)
+                    {
+                        if (MessageBox.Show("Czy chcesz odebrać plik przesylany wyslany od tutaj wstawic", "Nowy plik",
+                                MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes)
+                        {
+                            var request = new FileRequest
+                            {
+                                FolderName = fileRequest.FolderName,
+                                RequestCode = 108
+                            };
+
+                            byte[] requestCode = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(request));
+                            _tcpClient.GetStream().Write(requestCode,0,requestCode.Length);
+
+                            if(_tcpClient.Client.Poll(100000,SelectMode.SelectRead))
+                            {
+                                buffor = new byte[_tcpClient.Available];
+                                _tcpClient.Client.Receive(buffor);
+
+                                string jsonFileInfo = Encoding.UTF8.GetString(buffor);
+                                ReceiveFile fileInfo = JsonConvert.DeserializeObject<ReceiveFile>(jsonFileInfo);
+
+                                rsa.FromXmlString(config.XMLKeys);
+
+                                byte[] fileName = rsa.Decrypt(fileInfo.EncryptedName,RSAEncryptionPadding.Pkcs1);
+                                var decryptedFileName = Encoding.UTF8.GetString(fileName);
+
+                                if(fileInfo.ReturnCode == 110)
+                                {
+                                    requestCode = Encoding.UTF8.GetBytes("111");
+                                    _tcpClient.GetStream().Write(requestCode,0,requestCode.Length);
+
+                                    if (_tcpClient.Client.Poll(100000, SelectMode.SelectRead))
+                                    {
+                                        using (var output = File.Create(decryptedFileName + ".aes"))
+                                        {
+                                            var buffer = new byte[1024];
+                                            int bytesRead;
+                                            while ((bytesRead = _tcpClient.GetStream().Read(buffer, 0, buffer.Length)) >0)
+                                            {
+                                                output.Write(buffer, 0, bytesRead);
+                                            }
+                                            output.Close();
+                                        }
+
+                                        byte[] keyBytes = rsa.Decrypt(fileInfo.EncryptedKey, RSAEncryptionPadding.Pkcs1);
+                                        byte[] ivBytes = rsa.Decrypt(fileInfo.EncryptedIV, RSAEncryptionPadding.Pkcs1);
+                                        AESHelper.FileDecrypt(decryptedFileName + ".aes", decryptedFileName, keyBytes,
+                                            ivBytes);
+
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                //TODO PRZEZ 10 SEKUND SERWER NIE ODPOWIEDZAIL OBSLUZYC
+                            }
+
+                        }
+                    }
+                   
+                }
+            }
         }
 
     }
