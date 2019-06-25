@@ -311,7 +311,7 @@ namespace SafeFileTransferClient
             try
             {
                 _tcpClient = new TcpClient();
-                if (!_tcpClient.ConnectAsync(tbServerIp.Text, Convert.ToInt32(numPort.Value)).Wait(1000))
+                if (!_tcpClient.ConnectAsync(tbServerIp.Text, Convert.ToInt32(numPort.Value)).Wait(WaitTime))
                 {
                     MessageBox.Show("Błąd łączenie sie z serwerem", "Błąd", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     UpdateForm(false);
@@ -322,7 +322,7 @@ namespace SafeFileTransferClient
             }
             catch (Exception e)
             {
-                MessageBox.Show("Podany adres nie jest adresem IP", "Błąd", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Podany adres nie jest adresem IP lub podany port jest nie prawidłowy", "Błąd", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 UpdateForm(false);
                 return false;
             }
