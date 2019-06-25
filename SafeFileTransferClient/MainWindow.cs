@@ -530,5 +530,16 @@ namespace SafeFileTransferClient
             UpdateForm(false);
             _active = false;
         }
+
+        private void ListBoxUsers_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (listBoxUsers.SelectedIndex != -1) {
+                buttonChooseFile.Enabled = true;
+            }
+            else
+            {
+                buttonChooseFile.Enabled = false;
+            }
+        }
     }
 }
