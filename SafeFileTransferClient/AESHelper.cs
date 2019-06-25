@@ -15,9 +15,9 @@ namespace SafeFileTransferClient
     {
         /// <summary>
         /// Szyfruje wybrany plik do pliku .aes
-        /// Funkcja tworzy nowy plik o tej samej nazwie z rozszerzeniem .aes i go otwiera
-        /// Konfiguruje odpowiednio instancje AES
-        /// Funkcja wczytuje plik i go szyfruje rownocześnie zapisując go do nowego pliku wyjsciowego
+        /// Funkcja tworzy nowy plik o tej samej nazwie z rozszerzeniem .aes i go otwiera.
+        /// Konfiguruje odpowiednio instancje AES.
+        /// Funkcja wczytuje plik i go szyfruje rownocześnie zapisując go do nowego pliku wyjsciowego.
         /// </summary>
         /// <param name="inputFile">Nazwa pliku do zaszyfrowania</param>
         /// <param name="keyBytes">Klucz AES</param>

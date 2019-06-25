@@ -1,0 +1,6 @@
+var searchData=
+[
+  ['encryptediv',['EncryptedIV',['../class_safe_file_transfer_client_1_1_structures_1_1_receive_file.html#a69fa295ef8a7d9d2064ac830df5a5114',1,'SafeFileTransferClient.Structures.ReceiveFile.EncryptedIV()'],['../class_safe_file_transfer_client_1_1_structures_1_1_send_file_request.html#ae3653f0e11391d005657a40bb3e2f21f',1,'SafeFileTransferClient.Structures.SendFileRequest.EncryptedIV()']]],
+  ['encryptedkey',['EncryptedKey',['../class_safe_file_transfer_client_1_1_structures_1_1_receive_file.html#a74567d4a93b20365725f092a1a46f7e0',1,'SafeFileTransferClient.Structures.ReceiveFile.EncryptedKey()'],['../class_safe_file_transfer_client_1_1_structures_1_1_send_file_request.html#aa9acf9d2ce91e72028e5b6cadd683970',1,'SafeFileTransferClient.Structures.SendFileRequest.EncryptedKey()']]],
+  ['encryptedname',['EncryptedName',['../class_safe_file_transfer_client_1_1_structures_1_1_receive_file.html#a0ede506d8f9d7e8e4f029a4b88d2c885',1,'SafeFileTransferClient.Structures.ReceiveFile.EncryptedName()'],['../class_safe_file_transfer_client_1_1_structures_1_1_send_file_request.html#a0d93bdca9f976e38e850fe6d9a69a50d',1,'SafeFileTransferClient.Structures.SendFileRequest.EncryptedName()']]]
+];

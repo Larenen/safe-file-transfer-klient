@@ -1,0 +1,207 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=9"/>
+<meta name="generator" content="Doxygen 1.8.15"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Safe File Trasnfer Client: Dokumentacja klasy SafeFileTransferClient.AESHelper</title>
+<link href="tabs.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="dynsections.js"></script>
+<link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+<link href="doxygen.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<div id="top"><!-- do not remove this div, it is closed by doxygen! -->
+<div id="titlearea">
+<table cellspacing="0" cellpadding="0">
+ <tbody>
+ <tr style="height: 56px;">
+  <td id="projectalign" style="padding-left: 0.5em;">
+   <div id="projectname">Safe File Trasnfer Client
+   </div>
+  </td>
+ </tr>
+ </tbody>
+</table>
+</div>
+<!-- end header part -->
+<!-- Wygenerowano przez Doxygen 1.8.15 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Szukaj');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Szukaj');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespace_safe_file_transfer_client.html">SafeFileTransferClient</a></li><li class="navelem"><a class="el" href="class_safe_file_transfer_client_1_1_a_e_s_helper.html">AESHelper</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-static-methods">Statyczne metody publiczne</a> &#124;
+<a href="class_safe_file_transfer_client_1_1_a_e_s_helper-members.html">Lista wszystkich składowych</a>  </div>
+  <div class="headertitle">
+<div class="title">Dokumentacja klasy SafeFileTransferClient.AESHelper</div>  </div>
+</div><!--header-->
+<div class="contents">
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
+Statyczne metody publiczne</h2></td></tr>
+<tr class="memitem:a630697139d77481a33ea7c009b3ff388"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_safe_file_transfer_client_1_1_a_e_s_helper.html#a630697139d77481a33ea7c009b3ff388">FileEncrypt</a> (string inputFile, byte[] keyBytes, byte[] IvBytes)</td></tr>
+<tr class="memdesc:a630697139d77481a33ea7c009b3ff388"><td class="mdescLeft">&#160;</td><td class="mdescRight">Szyfruje wybrany plik do pliku .aes Funkcja tworzy nowy plik o tej samej nazwie z rozszerzeniem .aes i go otwiera Konfiguruje odpowiednio instancje AES Funkcja wczytuje plik i go szyfruje rownocześnie zapisując go do nowego pliku wyjsciowego  <a href="#a630697139d77481a33ea7c009b3ff388">Więcej...</a><br /></td></tr>
+<tr class="separator:a630697139d77481a33ea7c009b3ff388"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a26135bc083a24c651457506df2ca9d97"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_safe_file_transfer_client_1_1_a_e_s_helper.html#a26135bc083a24c651457506df2ca9d97">FileDecrypt</a> (string inputFile, string outputFile, byte[] keyBytes, byte[] IvBytes)</td></tr>
+<tr class="memdesc:a26135bc083a24c651457506df2ca9d97"><td class="mdescLeft">&#160;</td><td class="mdescRight">Deszyfruje plik Funkcja otwiera zaszyfrowany plik, nastepnie tworzy instancje AES odpowiednio ją konfigurując Tworzy plik wyjsciowy ktorego nazwa podowana jest w argumencie funkcji Deszyfruje plik, zapisując go przy tym do pliku wyjściowego  <a href="#a26135bc083a24c651457506df2ca9d97">Więcej...</a><br /></td></tr>
+<tr class="separator:a26135bc083a24c651457506df2ca9d97"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<h2 class="groupheader">Dokumentacja funkcji składowych</h2>
+<a id="a26135bc083a24c651457506df2ca9d97"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a26135bc083a24c651457506df2ca9d97">&#9670;&nbsp;</a></span>FileDecrypt()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static void SafeFileTransferClient.AESHelper.FileDecrypt </td>
+          <td>(</td>
+          <td class="paramtype">string&#160;</td>
+          <td class="paramname"><em>inputFile</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">string&#160;</td>
+          <td class="paramname"><em>outputFile</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">byte []&#160;</td>
+          <td class="paramname"><em>keyBytes</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">byte []&#160;</td>
+          <td class="paramname"><em>IvBytes</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Deszyfruje plik Funkcja otwiera zaszyfrowany plik, nastepnie tworzy instancje AES odpowiednio ją konfigurując Tworzy plik wyjsciowy ktorego nazwa podowana jest w argumencie funkcji Deszyfruje plik, zapisując go przy tym do pliku wyjściowego </p>
+<dl class="params"><dt>Parametry</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">inputFile</td><td></td></tr>
+    <tr><td class="paramname">outputFile</td><td></td></tr>
+    <tr><td class="paramname">password</td><td></td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a630697139d77481a33ea7c009b3ff388"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a630697139d77481a33ea7c009b3ff388">&#9670;&nbsp;</a></span>FileEncrypt()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static void SafeFileTransferClient.AESHelper.FileEncrypt </td>
+          <td>(</td>
+          <td class="paramtype">string&#160;</td>
+          <td class="paramname"><em>inputFile</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">byte []&#160;</td>
+          <td class="paramname"><em>keyBytes</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">byte []&#160;</td>
+          <td class="paramname"><em>IvBytes</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Szyfruje wybrany plik do pliku .aes Funkcja tworzy nowy plik o tej samej nazwie z rozszerzeniem .aes i go otwiera Konfiguruje odpowiednio instancje AES Funkcja wczytuje plik i go szyfruje rownocześnie zapisując go do nowego pliku wyjsciowego </p>
+<dl class="params"><dt>Parametry</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">inputFile</td><td>Nazwa pliku do zaszyfrowania</td></tr>
+    <tr><td class="paramname">keyBytes</td><td>Klucz AES</td></tr>
+    <tr><td class="paramname">IvBytes</td><td>Wektor inicjujący AES</td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<hr/>Dokumentacja dla tej klasy została wygenerowana z pliku:<ul>
+<li>AESHelper.cs</li>
+</ul>
+</div><!-- contents -->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+Wygenerowano przez &#160;<a href="http://www.doxygen.org/index.html">
+<img class="footer" src="doxygen.png" alt="doxygen"/>
+</a> 1.8.15
+</small></address>
+</body>
+</html>
