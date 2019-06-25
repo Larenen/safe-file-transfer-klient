@@ -12,11 +12,19 @@ namespace SafeFileTransferClient
 {
     public partial class SelectName : Form
     {
+        /// <summary>
+        /// Tworzy okno służace wybraniu nazwy użytkownika
+        /// </summary>
         public SelectName()
         {
             InitializeComponent();
         }
 
+        /// <summary>
+        /// Obsługuje działanie guzika zapisz
+        /// </summary>
+        /// <param name="sender">Kontrolka z jakiej został wysłany sygnał</param>
+        /// <param name="e">Parametry sygnału</param>
         private void ButtonSave_Click(object sender, EventArgs e)
         {
             if (textBoxNickname.Text == "")

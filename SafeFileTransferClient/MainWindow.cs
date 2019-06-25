@@ -24,26 +24,62 @@ namespace SafeFileTransferClient
 {
     public partial class MainWindow : Form
     {
+        /// <summary>
+        /// Gniazdo klienta
+        /// </summary>
         private TcpClient _tcpClient;
+        /// <summary>
+        /// Instancja RSA
+        /// </summary>
         private RSACng rsa = new RSACng(2048);
+        /// <summary>
+        /// Konfiguracja klienta zawierajaca klucze RSA i nickname
+        /// </summary>
         private Config config;
+        /// <summary>
+        /// Zmienna mowiąca o tym czy klient jest aktywny, zajmująca sie obsługa nasłuchu w dodatkowym wątku
+        /// </summary>
         private bool _active = false;
+        /// <summary>
+        /// Delegat umozliwiający wątkowi modyfikowanie listy użytkowników
+        /// </summary>
+        /// <param name="userList">Lista użytkownik zwroconych przez serwer</param>
         delegate void FormProc(UserList userList);
+        /// <summary>
+        /// Delegat umozliwajacy zmiane wygladu formatki z wątku
+        /// </summary>
+        /// <param name="status">Status połączenia z serwerem</param>
         delegate void FormDel(bool status);
+        /// <summary>
+        /// Wątek nasłuchujący serwer
+        /// </summary>
         private Thread _clientThread;
 
+        /// <summary>
+        /// Czas jaki program czeka na odpowiedz od serwera (Ustawione na 5 sekund)
+        /// </summary>
         private const int WaitTime = 5000000;
 
+        /// <summary>
+        /// Wywołanie poprzez Invoke funkcji zmieniającej zawartość listy użytkowników
+        /// </summary>
+        /// <param name="userList">Lista użtkowników zwrócona przez serwer</param>
         private void InvokeChangeUserList(UserList userList)
         {
             Invoke(new FormProc(ChangeUserList), userList);
         }
-
+        /// <summary>
+        /// Wywołanie poprzez Invoke funkcji zmieniającej wygląd formatki
+        /// </summary>
+        /// <param name="status">Status nasłuchu</param>
         private void InvokeUpdateForm(bool status)
         {
             Invoke(new FormDel(UpdateForm), status);
         }
-
+        /// <summary>
+        /// Funkcja aktualizuje listę użytkowników wyswietlanych w formatce, wykluczając przy tym nas samych.
+        /// </summary>
+        /// <param name="userList">Lista użytkowników zwrócona przez serwer</param>
         private void ChangeUserList(UserList userList)
         {
             XmlDocument xml = new XmlDocument();
@@ -65,6 +101,10 @@ namespace SafeFileTransferClient
             }
         }
 
+        /// <summary>
+        /// Funkcja aktualizuje wygląd formatki w zalezności od tego czy klient jest połączony czy rozłączony z serwerem.
+        /// </summary>
+        /// <param name="status">Status połączenia z serwerem</param>
         private void UpdateForm(bool status)
         {
             tbServerIp.Enabled = !status;
@@ -79,11 +119,19 @@ namespace SafeFileTransferClient
             listBoxUsers.Items.Clear();
         }
 
+        /// <summary>
+        /// Konstruktor głownego okna
+        /// </summary>
         public MainWindow()
         {
             InitializeComponent();
         }
 
+        /// <summary>
+        /// Funkcja odpowiada za obsługe guzika połącz/rozłącz na formatce
+        /// </summary>
+        /// <param name="sender">Kontrolka z jakiej został wysłany sygnał</param>
+        /// <param name="e">Parametry sygnału</param>
         private void BtnConnect_Click(object sender, EventArgs e)
         {            
             if(_tcpClient == null)
@@ -94,6 +142,11 @@ namespace SafeFileTransferClient
             }
         }
 
+        /// <summary>
+        /// Funkcja wywoływana podczas wczytywania sie formatki, sprawdz czy istnieje plik konfiguracyjny jezeli tak to go wczytuje w przypadku jego braku tworzy nowy
+        /// </summary>
+        /// <param name="sender">Kontrolka z jakiej został wysłany sygnał</param>
+        /// <param name="e">Parametry sygnału</param>
         private void Form1_Load(object sender, EventArgs e)
         {
             if (File.Exists("config.sft"))
@@ -106,12 +159,22 @@ namespace SafeFileTransferClient
             }
         }
 
+        /// <summary>
+        /// Odpowiada za wywołanie okna dialogowego umożliwiającego reset danych logowania
+        /// </summary>
+        /// <param name="sender">Kontrolka z jakiej został wysłany sygnał</param>
+        /// <param name="e">Parametry sygnału</param>
         private void ZresetujNickKluczeToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if(MessageBox.Show("Czy na pewno chcesz dokonać resetu? Jest on bezpowrotny","Uwaga!",MessageBoxButtons.OKCancel,MessageBoxIcon.Warning) == DialogResult.OK)
                 CreateConfig();
         }
 
+        /// <summary>
+        /// Odpowiada za guzik do wybrania a następnie wysłania plilku
+        /// </summary>
+        /// <param name="sender">Kontrolka z jakiej został wysłany sygnał</param>
+        /// <param name="e">Parametry sygnału</param>
         private void ButtonChooseFile_Click(object sender, EventArgs e)
         {
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
@@ -123,6 +186,17 @@ namespace SafeFileTransferClient
             }
         }
 
+        /// <summary>
+        /// Wysyła plik wybrany przez użytkownika.
+        /// Funkcja wczytuje to instancji RSA klucz publiczny wybranego z listy użytkownika
+        /// Następnie tworzy instancje AES'a i generuje losowy klucz
+        /// Plik wybrany w oknie dialogowym jest szyfrowany przy pomocy AES'a i zapisywany tymczasowo do pliku o tej samej nazwie z rozszerzeniem .aes
+        /// Funkcja przy pomocy RSA szyfruje klucz AES, wektor inicujący AES oraz nazwe pliku
+        /// Nastepnie ubiera to wszystko w obiekt JSON serializuje i wysyla na serwer
+        /// Jezeli odpowiedz od serwera bedzie poprawna to funkcja otwiera plik .aes i zaczyna wysyłac go na serwer
+        /// Po przesłaniu całego pliku funkcja zamyka połączenie z serwerem
+        /// </summary>
+        /// <param name="openFileDialog">Okno dialogowe służące do wybrania pliku</param>
         private void SendFile(OpenFileDialog openFileDialog)
         {
             _clientThread.Abort();
@@ -211,6 +285,13 @@ namespace SafeFileTransferClient
             }
         }
 
+        /// <summary>
+        /// Funkcja łączy klienta z serwerem
+        /// Pobiera klucz publiczny z konfiguracji zapisanej w pamięci programu
+        /// Tworzy nowy socket i łączy się przez niego z serwerem, jeżeli połączenie się uda wysyła dane autoryzacyjne
+        /// Czeka na odpowiedz z serwera jeżeli serwer zatwierdzi logowanie to tworzy wątek nasłuchujący i aktualizuje formatke
+        /// </summary>
+        /// <returns>Zmienna bool informującą o powdzeniu sie operacji łączenia z serwerem</returns>
         private bool InitializeConnection()
         {
             XmlDocument xml = new XmlDocument();
@@ -286,6 +367,10 @@ namespace SafeFileTransferClient
             return false;
         }
 
+        /// <summary>
+        /// Wczytuje plik konfiguracyjny do pamięci programu
+        /// Jeżeli plik jest uszkodzony pyta czy użytkownik chce wygenerować nowy
+        /// </summary>
         private void LoadConfig()
         {
             string configFile = File.ReadAllText("config.sft");
@@ -309,6 +394,13 @@ namespace SafeFileTransferClient
             }
         }
 
+        /// <summary>
+        /// Tworzy plik konfiguracyjny
+        /// Wywołuje okno które pozwala wybrać użytkownikowi swoją nazwe
+        /// Następnie jeżeli użytkownik poda nazwe tworzona jest nowa para kluczy RSA
+        /// Tworzony jest obiekt klasy Config w którym zapisywana jest nazwa użytkownika i jego klucze
+        /// Obiekt jest serializowany do stringa i zapisywany w nowo utworoznym pliku
+        /// </summary>
         private void CreateConfig()
         {
             SelectName selectName = new SelectName();
@@ -349,6 +441,10 @@ namespace SafeFileTransferClient
             selectName.Dispose();
         }
 
+        /// <summary>
+        /// Funkcja tworzy nowy plik konfiguracyjny
+        /// </summary>
+        /// <returns></returns>
         private FileStream CreateFile()
         {
             FileStream fs = null;
@@ -375,6 +471,15 @@ namespace SafeFileTransferClient
             return fs;
         }
 
+        /// <summary>
+        /// Odpowiada za działanie wątku nasłuchującego odpowiedzi z serwera
+        /// Obsluguje dwie odpowiedzi o numerze 107 i 112
+        /// Po otrzymaniu zapytania o akceptacje pliku wyswietla okno dialogow na ktorym uzytkownik ma mozliwosc zdecydowania czy przyjmuje plik
+        /// Nastepnie jezeli uzytkownik sie zgodzi wysyla informacje o zgodzie do klienta i oczekuje od serwera zaszyfrowanej nazwy pliku, klucza AES i wektora inicjujacego AES
+        /// Deszyfruje nazwe pliku i wywołuje funkcje ReceiveFile()
+        ///
+        /// W przypadku prosby o odswiezenie listy użytkowników wywołuje odpowiednia funkcje InvokeChangeUserList().
+        /// </summary>
         private void ReceivingThread()
         {
             while(_active)
@@ -485,6 +590,16 @@ namespace SafeFileTransferClient
                 MessageBoxIcon.Error);
         }
 
+        /// <summary>
+        /// Tworzy tymczasowy plik o podanej nazwe z rozszerzeniem .aes
+        /// Zapisuje z serwera zaszyfrowany plik
+        /// Deszyfruje klucz AES i wektor inicjujący AES
+        /// Otwiera plik tymczasowy i rozpoczyna jego deszyfrowanie przy pomocy zdeszyfrowanego klucza
+        /// Usuwa tymczasowy plik .aes
+        /// Kończy połączenie z serwerem i wyswietla informacje o poprawnym pobraniu pliku
+        /// </summary>
+        /// <param name="decryptedFileName">Nazwa pliku który bedziemy odszyfrowywać</param>
+        /// <param name="fileInfo">Obiekt klasy ReceiveFile który zawiera niezbędne inforamcje do deszyfrowania pliku</param>
         private void ReceiveFile(string decryptedFileName, ReceiveFile fileInfo)
         {
             using (var output = File.Create(decryptedFileName + ".aes"))
@@ -515,6 +630,11 @@ namespace SafeFileTransferClient
                 MessageBoxIcon.Information);
         }
 
+        /// <summary>
+        /// Wywoływane podczas zamykania formularza, zamyka działający w tle wątek
+        /// </summary>
+        /// <param name="sender">Kontrolka z jakiej został wysłany sygnał</param>
+        /// <param name="e">Parametry sygnału</param>
         private void MainWindow_FormClosing(object sender, FormClosingEventArgs e)
         {
             if(_clientThread != null)
@@ -522,24 +642,29 @@ namespace SafeFileTransferClient
             _active = false;
         }
 
+        /// <summary>
+        /// Zamyka połączenie klienta z serwerem.
+        /// Kończy działanie wątku działającego w tle.
+        /// Aktalizuje wygląd formatki.
+        /// </summary>
         private void CloseConnection()
         {
-            _clientThread.Abort();
+            if(_clientThread != null)
+                _clientThread.Abort();
             _tcpClient.Close();
             _tcpClient = null;
             UpdateForm(false);
             _active = false;
         }
 
+        /// <summary>
+        /// Aktywuje guzik do wysyłania jeżeli odbiorca został wybrany
+        /// </summary>
+        /// <param name="sender">Kontrolka z jakiej został wysłany sygnał</param>
+        /// <param name="e">Parametry sygnału</param>
         private void ListBoxUsers_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (listBoxUsers.SelectedIndex != -1) {
-                buttonChooseFile.Enabled = true;
-            }
-            else
-            {
-                buttonChooseFile.Enabled = false;
-            }
+            buttonChooseFile.Enabled = listBoxUsers.SelectedIndex != -1;
         }
     }
 }
