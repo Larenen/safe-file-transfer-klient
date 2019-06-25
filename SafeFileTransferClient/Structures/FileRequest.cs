@@ -10,5 +10,6 @@ namespace SafeFileTransferClient.Structures
     {
         public int RequestCode { get; set; }
         public string FolderName { get; set; }
+        public string  Sender { get; set; }
     }
 }
